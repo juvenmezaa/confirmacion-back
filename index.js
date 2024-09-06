@@ -6,10 +6,13 @@ const { createObjectCsvWriter } = require('csv-writer');
 const bodyParser = require('body-parser');
 const csvParser = require('csv-parser');
 const dotenv = require('dotenv').config();
+const sequelize = require("./src/connection");
+const InvitadosModel = require("./src/invitadosModel");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
 
 app.post('/api/modificar-csv', (req, res) => {
   const { buscarPor, nuevoValor } = req.body; // Obtenemos el criterio de búsqueda y el nuevo valor desde el cliente
@@ -96,7 +99,41 @@ app.get('/api/consultar-csv', (req, res) => {
     });
 });
 
+app.post('/api/consultar', async (req, res) => {
+  const { buscarPor } = req.body;
+
+  let invitado = await InvitadosModel.findOne({
+    where: {celular: buscarPor}
+  });
+
+  res.status(200).json(invitado);
+});
+
+app.post('/api/modificar', (req, res) => {
+  const { buscarPor, nuevoValor } = req.body; // Obtenemos el criterio de búsqueda y el nuevo valor desde el cliente
+  console.log(buscarPor, nuevoValor)
+  InvitadosModel.update({
+    confirmados: nuevoValor
+  }, {
+    where: {celular:buscarPor}
+  }).then(respuesta => {
+    res.status(200).json(respuesta);
+  }).catch(err=> {
+    console.log(err);
+    res.status(500).json({ error: 'No se pudo actualizar el registro' });
+  });
+});
+
+
+
 let PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  try {
+    await sequelize.sync({ force: false });
+    await sequelize.sync({ alter: true });
+    console.log("DB connected");
+  } catch (error) {
+    console.log(error);
+  }
   console.log("Servidor escuchando en el puerto "+ PORT);
 });
