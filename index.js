@@ -5,6 +5,7 @@ const cors = require('cors');
 const { createObjectCsvWriter } = require('csv-writer');
 const bodyParser = require('body-parser');
 const csvParser = require('csv-parser');
+const dotenv = require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -95,7 +96,7 @@ app.get('/api/consultar-csv', (req, res) => {
     });
 });
 
-const PORT = 3000;
+let PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Servidor escuchando en el puerto 3000");
+  console.log("Servidor escuchando en el puerto "+ PORT);
 });
